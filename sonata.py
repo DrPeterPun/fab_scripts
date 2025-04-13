@@ -1,8 +1,8 @@
-
 import random
+
 def sonata_hits(revealed):
      attack = revealed.count("a")
-     non_attack = revealed.count("n")
+     non_attack = revealed.count("n") + revealed.count("s")
      return min(attack, non_attack)
 
 def sample_deck(deck):
@@ -22,27 +22,41 @@ def sample_deck(deck):
             for _ in range(sonata_hits(sonata)):
                 deck.remove("a")
                 hits += 1
-            deck.shuffle()
+            random.shuffle(deck)
 
     if played != 3:
         return None
     else:
-        hits
+        return hits
                 
+n = 1000000
 
-for i in range(10):
-    attack = 30-i
-    non_attack = 30+i
-    sonata_size = 3
 
-    deck = "s"*3 + "n"*(non_attack - 3) + "a"*(attack)
-    deck = list(deck)
-    hits_per_game = {0:0, 1:0, 2:0, 3:0}
-    for i in range(1000):
-        deck.shuffle()
-        hits = sample_deck(deck)
-        if hits != None:
-            hits_per_game[hits] += 1
-    total_games = sum(hits_per_game.values())
-    percent_hits_per_game = { k: v/total_games for k, v in  hits_per_game.items() }
-    print("attacks:", attack, "\tnon-attacks:", attack,"\thits:",hits_per_game, "\tpercent:", percent_hits_per_game)
+for j in range(5):
+    file_name = f"sonata_{j}_misses.txt"
+    with open(file_name, "w") as file:  # "a" mode appends to the file
+        print("n=",n,file=file)
+    for i in range(11):
+        miss = j
+        attack = 35-i
+        non_attack = 25+i-miss
+        sonata_size = 3
+
+        deck = "s"*3 + "n"*(non_attack - 3) + "a"*(attack) + "m"*miss
+        deck = list(deck)
+        hits_per_game = {0:0, 1:0, 2:0, 3:0}
+        
+        for _ in range(n):
+            random.shuffle(deck)
+            hits = sample_deck(deck)
+            if hits != None:
+                hits_per_game[hits] += 1
+        total_games = sum(hits_per_game.values())
+        percent_hits_per_game = { k: v/total_games for k, v in  hits_per_game.items() }
+        formated_percentage = {key: f"{value:.2%}" for key, value in percent_hits_per_game.items()}
+        percentage_sonata = ( hits_per_game[1] + hits_per_game[2] *2 + hits_per_game[3]*3 ) / ( total_games * 3 )
+        print("attacks:", attack, "\tnon-attacks:", non_attack,"\tmisses",miss,"\thits:",hits_per_game, "\tpercent:", formated_percentage, "hit % per sonata", f"{percentage_sonata:.2%}")
+        with open(file_name, "a") as file:  # "a" mode appends to the file
+            print("attacks:", attack, "\tnon-attacks:", non_attack, 
+                "\thits:", hits_per_game, "\tpercent:", formated_percentage, 
+                "single sonata percentage", f"{percentage_sonata:.2%}", file=file)
